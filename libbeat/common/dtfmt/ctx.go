@@ -31,18 +31,22 @@ type ctx struct {
 	isoWeek, isoYear int
 
 	hour, min, sec int
-	millis         int
+	nano           int
+
+	tzOffset int
 
 	buf []byte
 }
 
 type ctxConfig struct {
-	date    bool
-	clock   bool
-	weekday bool
-	yearday bool
-	millis  bool
-	iso     bool
+	date     bool
+	clock    bool
+	weekday  bool
+	yearday  bool
+	millis   bool
+	nano     bool
+	iso      bool
+	tzOffset bool
 }
 
 func (c *ctx) initTime(config *ctxConfig, t time.Time) {
@@ -56,8 +60,8 @@ func (c *ctx) initTime(config *ctxConfig, t time.Time) {
 		c.isoYear, c.isoWeek = t.ISOWeek()
 	}
 
-	if config.millis {
-		c.millis = t.Nanosecond() / 1000000
+	if config.nano {
+		c.nano = t.Nanosecond()
 	}
 
 	if config.yearday {
@@ -66,6 +70,10 @@ func (c *ctx) initTime(config *ctxConfig, t time.Time) {
 
 	if config.weekday {
 		c.weekday = t.Weekday()
+	}
+
+	if config.tzOffset {
+		_, c.tzOffset = t.Zone()
 	}
 }
 
@@ -77,8 +85,8 @@ func (c *ctxConfig) enableClock() {
 	c.clock = true
 }
 
-func (c *ctxConfig) enableMillis() {
-	c.millis = true
+func (c *ctxConfig) enableNano() {
+	c.nano = true
 }
 
 func (c *ctxConfig) enableWeekday() {
@@ -91,6 +99,10 @@ func (c *ctxConfig) enableYearday() {
 
 func (c *ctxConfig) enableISO() {
 	c.iso = true
+}
+
+func (c *ctxConfig) enableTimeZoneOffset() {
+	c.tzOffset = true
 }
 
 func isLeap(year int) bool {
